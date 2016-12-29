@@ -49,7 +49,7 @@ library(grid)
 
 
 
-setwd("C:/Users/Anthony/Dropbox/Anthony/Studies/Bhismalab/Papers/FV_2010_Data")
+setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
 
 
 #GE analysis
