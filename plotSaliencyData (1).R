@@ -1,11 +1,13 @@
 rm(list=ls())
+
+#install.packages("R.matlab") # this is commented out for users who already have the package.
 library(R.matlab)
 library(ggplot2)
 
 # load in data from matlab
 
-setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017") # you need to change this to whichever directory you're storing your file
-#setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017") # you need to change this to whichever directory you're storing your file
+#setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017") # you need to change this to whichever directory you're storing your file
+setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017") # you need to change this to whichever directory you're storing your file
 d <- readMat('ratiosPsy_and_Image.mat')
 
 ###outlier checking
@@ -51,11 +53,16 @@ d$ratioSalience <- t(d$ratioSalience)
 # strip out valence
 val <- d$ratioValence[,2]
 
-data <- data.frame(ratio = (c(val,d$ratioArousal,d$ratioRMS,d$ratioLocalRMS,d$ratioSalience)), measure = (rep(c("rating - valence","rating - arousal","RMS - global","RMS - local","Salience - Koch"),each = 40)))
+data <- data.frame(ratio = (c(val,d$ratioArousal,d$ratioRMS,d$ratioLocalRMS,d$ratioSalience)), measure = (rep(c("Rating - Valence","Rating - Arousal","RMS - global","RMS - local","Salience - Koch"),each = 40)))
 
-data$ratio
-data$measure
 
-bp <- ggplot(data, aes(x=measure,y=ratio))+geom_boxplot()+ylab("social / non-social ratio")
-#ggsave(bp, filename = "C:/Users/Anthony/Dropbox/Anthony/Bhismalab/Papers/FV_2010_Data/socnonsoc_ratio_measures.pdf", width=10, height=10)
+bp <- ggplot(data, aes(x=measure,y=ratio))+
+  geom_boxplot()+
+  theme(text = element_text(size=20))+
+  ylab("Social / Non-social ratio")+
+  xlab("")
+bp
+
 ggsave(bp, filename = "C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017/Figure_1.png", width=10, height=10)
+
+
