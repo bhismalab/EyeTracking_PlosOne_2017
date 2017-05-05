@@ -40,6 +40,8 @@ for(i in 1:5){
   
 }
 
+write.csv(outlier_array,"outlier_array.csv")
+
 ### end of outlier checking
 
 

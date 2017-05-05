@@ -47,6 +47,25 @@ library(grid)
 # data wrangling made easier
 
 
+image.list=read.csv("image_list.csv")
+
+eq.correlations=data.frame(unsc.r.val=rep(0,length(image.list)),
+                           unsc.p.val=rep(0,length(image.list)),
+                           scr.r.val=rep(0,length(image.list)),
+                           scr.p.val=rep(0,length(image.list)),
+                           steiger.p=rep(0,length(image.list)))
+### code to remove any image
+
+big.pb <- winProgressBar(title = "big progress bar", min = 0,
+                     max = length(image.list), width = 300)
+
+
+for(all_of_it in 1:length(image.list)){
+  #print(image.list[all_of_it])
+
+  setWinProgressBar(big.pb, all_of_it, title=paste( round(all_of_it/length(image.list)*100, 0),"% done"))
+
+
 
 # setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
 
@@ -57,6 +76,12 @@ setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/Eye
 ge.raw<-read.csv("GE_data.csv")
 fv.data.raw<-read.csv("FV_data_raw.csv")
 
+############################################
+### this is only for creating the table of how the data looks when removing each image pairing
+### remove image.list[all_of_it]
+fv.data.raw$image1[fv.data.raw$image1==image.list[all_of_it]]<-NA
+fv.data.raw<-na.omit(fv.data.raw)
+############################################
 
 
 ge.raw$pptrial<-paste(ge.raw$PP,ge.raw$trial.number)
@@ -73,10 +98,7 @@ ge.raw.trials$CURRENT_SAC_START_TIME=data.matrix(ge.raw.trials$CURRENT_SAC_START
 typeof(ge.raw.trials$CURRENT_SAC_ANGLE)
 typeof(ge.raw.trials$CURRENT_SAC_AMPLITUDE)
 
-#Identifying trials as NA in which participants first saccade was outside of 70-500ms of trial onset and highlighting relevant data
-ge.raw.trials$pptrial[ge.raw.trials$CURRENT_SAC_START_TIME<70]<-NA
-ge.raw.trials$pptrial[ge.raw.trials$CURRENT_SAC_START_TIME>500]<-NA
-ge.raw.trials<-na.omit(ge.raw.trials)
+
 
 #Identifying Scrambled
 ge.raw.trials$Scrambled[ge.raw.trials$trial.code>40]<-"Scrambled"
@@ -90,6 +112,8 @@ ge.raw.trials$red.trial.code[ge.raw.trials$red.trial.code>40]<-ge.raw.trials$red
 ge.raw.trials$CURRENT_SAC_ANGLE[ge.raw.trials$CURRENT_SAC_ANGLE=="."]<-NA
 ge.raw.trials$CURRENT_SAC_ANGLE[ge.raw.trials$CURRENT_SAC_ANGLE==""]<-NA
 ge.raw.trials<-na.omit(ge.raw.trials)
+
+time.exclusion.trial=0
 
 #Identifying sociality of first saccade
 for (i in 1:length(ge.raw.trials$PP)) {
@@ -159,12 +183,41 @@ for (i in 1:length(ge.raw.trials$PP)) {
   if (valid.saccade==0){
     ge.raw.trials$dev.angle[i]=NA
   }
+  
+  #Identifying trials as NA in which participants first saccade was outside of 70-500ms of trial onset and highlighting relevant data
+  if(ge.raw.trials$CURRENT_SAC_START_TIME[i]<70){
+    ge.raw.trials$time.exclusion.70.lower[i]=1
+  } else {
+    ge.raw.trials$time.exclusion.70.lower[i]=0
+  }
+
+  if(ge.raw.trials$CURRENT_SAC_START_TIME[i]>500){
+    ge.raw.trials$time.exclusion.500.higher[i]=1
+  } else {
+    ge.raw.trials$time.exclusion.500.higher[i]=0
+  }
+
 }
 
 ge.raw.trials<-na.omit(ge.raw.trials)
 
 #summarising data for each participant
 summary.ge<-data.frame(pps=unique(ge.raw$PP))
+
+
+# loop through participants to count time excluded trials
+for(i in 1:length(summary.ge$pps)){
+  this.data<-subset(ge.raw.trials,PP==summary.ge$pps[i])
+  summary.ge$time.exclusion.70.lower[i] = sum(this.data$time.exclusion.70.lower)
+  summary.ge$time.exclusion.500.higher[i] = sum(this.data$time.exclusion.500.higher)
+}
+
+
+ge.raw.trials$pptrial[ge.raw.trials$CURRENT_SAC_START_TIME<70]<-NA
+ge.raw.trials$pptrial[ge.raw.trials$CURRENT_SAC_START_TIME>500]<-NA
+ge.raw.trials<-na.omit(ge.raw.trials)
+
+
 
 for(i in 1:length(summary.ge$pps)){
   this.data<-subset(ge.raw.trials,PP==summary.ge$pps[i])
@@ -204,7 +257,23 @@ for(i in 1:length(summary.ge$pps)){
   #scrambled
   summary.ge$scr.trials[i]=sum(this.data$Scrambled=="Scrambled")
 
-} #GE summary is now ready
+} 
+
+summary.ge$pps[summary.ge$unsc.trials<30]<-NA
+summary.ge$pps[summary.ge$scr.trials<30]<-NA
+
+summary.ge<-na.omit(summary.ge)
+
+ge.total.time.exclusions=sum(summary.ge$time.exclusion.500.higher+summary.ge$time.exclusion.70.lower)
+ge.total.time.exclusions
+
+#total trials for each condition (scrambled/unscrambled)
+length(summary.ge$pps)*80         #total number of trials
+ge.total.time.exclusions/(length(summary.ge$pps)*80) #total number of exclusions
+ge.total.time.exclusions/(length(summary.ge$pps)) #average number of trials per participant
+
+
+#GE summary is now ready
 
 
 ################# FV analysis ###############
@@ -399,10 +468,6 @@ summary.EQ<-subset(EQ.data,select = c(pps,EQ.Total))
   
 ### removing participants with less than 30 valid trials in unscrambled or scrambled condition ###
 
-summary.ge$pps[summary.ge$unsc.trials<30]<-NA
-summary.ge$pps[summary.ge$scr.trials<30]<-NA
-
-summary.ge<-na.omit(summary.ge)
 
 #Gender info lined up
 gender.data<-read.csv("Gender_Data.csv")
@@ -490,8 +555,17 @@ eq.fv.scr.cor
 
 #Steiger test
 FV.Unsc.Scr.cor=cor.test(summary.fv.eq$unsc.prop,summary.fv.eq$scr.prop)
-steiger.test(eq.fv.unsc.cor,eq.fv.scr.cor,FV.Unsc.Scr.cor)
+steiger.result=steiger.test(eq.fv.unsc.cor,eq.fv.scr.cor,FV.Unsc.Scr.cor)
 
+eq.correlations$unsc.r.val[all_of_it]=eq.fv.unsc.cor$estimate
+eq.correlations$unsc.p.val[all_of_it]=eq.fv.unsc.cor$p.value
+eq.correlations$scr.r.val[all_of_it]=eq.fv.scr.cor$estimate
+eq.correlations$scr.p.val[all_of_it]=eq.fv.scr.cor$p.value
+eq.correlations$steiger.p[all_of_it]=steiger.result$P_Value
+
+}
+
+close(big.pb)
 
 #### FIGURES ####
 
@@ -597,6 +671,11 @@ scatEQ_FV <- ggplot(datEQ_FV, aes(x=EQ,y=EQ_FV,cond=Condition,color=Condition))+
 scatEQ_FV
 ggsave(scatEQ_FV, filename = "EQ_v_FV.png", width=10, height=8)
 
+
+
+
+
+
 ############################ POST REVIEWER ANALYSIS ##################################
 
 ## Range of angles & SD scatter plot (person by person)
@@ -699,5 +778,27 @@ male.summary.fv.eq=subset(summary.fv.eq,summary.fv.eq$Gender=="m")
 female.summary.fv.eq=subset(summary.fv.eq,summary.fv.eq$Gender=="f")
 cor.test(male.summary.fv.eq$EQ.Total,male.summary.fv.eq$unsc.prop)
 cor.test(female.summary.fv.eq$EQ.Total,female.summary.fv.eq$unsc.prop)
+
+
+### deletable - I think ####
+
+
+### cronbach alpha calcs...?
+
+# GE
+
+ge.alpha.pps = unique(ge.raw.trials$PP)
+ge.alpha.pairs = unique(ge.raw.trials$trial.code)
+ge.alpha.matrix = matrix(nrow = length(ge.alpha.pps), ncol=length(ge.alpha.pairs))
+
+for(i in 1:length(ge.alpha.pps)){
+  for(j in 1:length(ge.alpha.pairs)){
+    ge.alpha.matrix = ge.raw.trials$dev.angle
+    [ge.raw.trials]
+  }
+}
+
+
+
 
 
