@@ -548,7 +548,7 @@ cor.test(summary.ge.eq$EQ.Total,summary.ge.eq$angle.scr)
 #one sample tests
 mean(summary.fv$unsc.prop)
 sd(summary.fv$unsc.prop)
-sd(summary.fv$unsc.prop)/sqrt(length(summary.fv$unsc.prop))
+sd(summary.fv$unsc.prop)/sqrt(length(summary.fv$unsc.prop)) #se
 t.test(summary.fv$unsc.prop, mu=.5)
 cohen.d(summary.fv$unsc.prop,mu = .5)
 
@@ -575,6 +575,7 @@ eq.fv.scr.cor
 #Steiger test
 FV.Unsc.Scr.cor=cor.test(summary.fv.eq$unsc.prop,summary.fv.eq$scr.prop)
 steiger.result=steiger.test(eq.fv.unsc.cor,eq.fv.scr.cor,FV.Unsc.Scr.cor)
+steiger.result
 
 #image_outlier eq.correlations$unsc.r.val[all_of_it]=eq.fv.unsc.cor$estimate
 #image_outlier eq.correlations$unsc.p.val[all_of_it]=eq.fv.unsc.cor$p.value
