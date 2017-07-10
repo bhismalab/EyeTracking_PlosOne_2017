@@ -3,6 +3,8 @@ rm(list=ls())
 #install.packages("R.matlab") # this is commented out for users who already have the package.
 library(R.matlab)
 library(ggplot2)
+library(stringr)
+
 
 # load in data from matlab
 
@@ -53,14 +55,14 @@ d$ratioLocalRMS <- t(d$ratioLocalRMS)
 d$ratioSalience <- t(d$ratioSalience)
 
 # strip out valence
-val <- d$ratioValence[,2]
+val <- d$ratioValence #[,2]
 
 data <- data.frame(ratio = (c(val,d$ratioArousal,d$ratioRMS,d$ratioLocalRMS,d$ratioSalience)), measure = (rep(c("Rating - Valence","Rating - Arousal","RMS - global","RMS - local","Salience - Koch"),each = 40)))
+data$newMeasure = str_wrap(data$measure, width=10)
 
-
-bp <- ggplot(data, aes(x=measure,y=ratio))+
+bp <- ggplot(data, aes(x=newMeasure,y=ratio))+
   geom_boxplot()+
-  theme(text = element_text(size=20))+
+  theme(text = element_text(size=30))+
   ylab("Social / Non-social ratio")+
   xlab("")
 bp

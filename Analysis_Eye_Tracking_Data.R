@@ -611,6 +611,8 @@ soc.angle.plot <-ggplot(ge.dat,aes(x=Condition, y=Angle, fill=Condition)) +
   ylab("Average deviation to social images (°)")+
   guides(fill=FALSE) +
   theme_bw() +
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=30,face="bold"))+
   theme(plot.background = element_blank(),        
         text = element_text(size=20,face = "bold")        
         ,panel.grid.major = element_blank()
@@ -649,6 +651,8 @@ soc.dur.plot <-ggplot(fv.dat,aes(x=Condition, y=prop, fill=Condition)) +
   ylab("Proportion of gaze duration to social images")+
   guides(fill=FALSE) +
   theme_bw() +
+  theme(axis.text=element_text(size=25),
+        axis.title=element_text(size=30,face="bold"))+
   theme(plot.background = element_blank(),        
         text = element_text(size=20,face = "bold")        
         ,panel.grid.major = element_blank()
