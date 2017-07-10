@@ -1,3 +1,7 @@
+library(ggplot2)
+library(grid)
+# data wrangling made easier
+
 steiger.test<-function(r12,r13,r23){
   rmsqrd<-(r12$estimate^2+r13$estimate^2)/2;
   f=(1-r23$estimate)/(2*(1-rmsqrd));
@@ -42,45 +46,44 @@ cousineau.SE<-function(data_frame_inputted){
 }
 
 
-library(ggplot2)
-library(grid)
-# data wrangling made easier
 
 
-image.list=read.csv("image_list.csv")
+############### Code for checking whether any one image drove the effect. ######################################
+### Commented out below. To reinstate, uncomment lines with "image_outlier" at the start of a line
+#image_outlier image.list=read.csv("image_list.csv")
 
-eq.correlations=data.frame(unsc.r.val=rep(0,length(image.list)),
-                           unsc.p.val=rep(0,length(image.list)),
-                           scr.r.val=rep(0,length(image.list)),
-                           scr.p.val=rep(0,length(image.list)),
-                           steiger.p=rep(0,length(image.list)))
+#image_outlier eq.correlations=data.frame(unsc.r.val=rep(0,length(image.list)),
+#image_outlier                           unsc.p.val=rep(0,length(image.list)),
+#image_outlier                           scr.r.val=rep(0,length(image.list)),
+#image_outlier                           scr.p.val=rep(0,length(image.list)),
+#image_outlier                           steiger.p=rep(0,length(image.list)))
 ### code to remove any image
 
-big.pb <- winProgressBar(title = "big progress bar", min = 0,
-                     max = length(image.list), width = 300)
+#image_outlier big.pb <- winProgressBar(title = "big progress bar", min = 0,
+#image_outlier                     max = length(image.list), width = 300)
 
 
-for(all_of_it in 1:length(image.list)){
-  #print(image.list[all_of_it])
+#image_outlier for(all_of_it in 1:length(image.list)){
 
-  setWinProgressBar(big.pb, all_of_it, title=paste( round(all_of_it/length(image.list)*100, 0),"% done"))
+#image_outlier  setWinProgressBar(big.pb, all_of_it, title=paste( round(all_of_it/length(image.list)*100, 0),"% done"))
+################################################################################################################
+  
 
 
+setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
 
-# setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
-
-setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
+#setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
 
 
 #GE analysis
 ge.raw<-read.csv("GE_data.csv")
 fv.data.raw<-read.csv("FV_data_raw.csv")
 
-############################################
+#############################################image_outlier
 ### this is only for creating the table of how the data looks when removing each image pairing
 ### remove image.list[all_of_it]
-fv.data.raw$image1[fv.data.raw$image1==image.list[all_of_it]]<-NA
-fv.data.raw<-na.omit(fv.data.raw)
+#image_outlier fv.data.raw$image1[fv.data.raw$image1==image.list[all_of_it]]<-NA
+#image_outlier fv.data.raw<-na.omit(fv.data.raw)
 ############################################
 
 
@@ -501,6 +504,14 @@ write.csv(summary.fv.eq, file="FreeviewSummary_EQ.csv")
 
 ##Main effects
 
+mean(summary.ge$angle.unsc)
+sd(summary.ge$angle.unsc)
+sd(summary.ge$angle.unsc)/sqrt(length(summary.ge$angle.unsc))
+
+mean(summary.ge$angle.scr)
+sd(summary.ge$angle.scr)
+sd(summary.ge$angle.scr)/sqrt(length(summary.ge$angle.scr))
+
 #latency analysis
 
 mean(summary.ge$lat.soc.unscr)
@@ -535,8 +546,16 @@ cor.test(summary.ge.eq$EQ.Total,summary.ge.eq$angle.scr)
 #FV task
 #Main effects
 #one sample tests
+mean(summary.fv$unsc.prop)
+sd(summary.fv$unsc.prop)
+sd(summary.fv$unsc.prop)/sqrt(length(summary.fv$unsc.prop))
 t.test(summary.fv$unsc.prop, mu=.5)
 cohen.d(summary.fv$unsc.prop,mu = .5)
+
+
+mean(summary.fv$scr.prop)
+sd(summary.fv$scr.prop)
+sd(summary.fv$scr.prop)/sqrt(length(summary.fv$scr.prop))
 t.test(summary.fv$scr.prop, mu=.5)
 cohen.d(summary.fv$scr.prop,mu = .5)
 
@@ -557,15 +576,15 @@ eq.fv.scr.cor
 FV.Unsc.Scr.cor=cor.test(summary.fv.eq$unsc.prop,summary.fv.eq$scr.prop)
 steiger.result=steiger.test(eq.fv.unsc.cor,eq.fv.scr.cor,FV.Unsc.Scr.cor)
 
-eq.correlations$unsc.r.val[all_of_it]=eq.fv.unsc.cor$estimate
-eq.correlations$unsc.p.val[all_of_it]=eq.fv.unsc.cor$p.value
-eq.correlations$scr.r.val[all_of_it]=eq.fv.scr.cor$estimate
-eq.correlations$scr.p.val[all_of_it]=eq.fv.scr.cor$p.value
-eq.correlations$steiger.p[all_of_it]=steiger.result$P_Value
+#image_outlier eq.correlations$unsc.r.val[all_of_it]=eq.fv.unsc.cor$estimate
+#image_outlier eq.correlations$unsc.p.val[all_of_it]=eq.fv.unsc.cor$p.value
+#image_outlier eq.correlations$scr.r.val[all_of_it]=eq.fv.scr.cor$estimate
+#image_outlier eq.correlations scr.p.val[all_of_it]=eq.fv.scr.cor$p.value
+#image_outlier eq.correlations$steiger.p[all_of_it]=steiger.result$P_Value
 
-}
+#image_outlier }
 
-close(big.pb)
+#image_outlier close(big.pb)
 
 #### FIGURES ####
 
@@ -588,7 +607,7 @@ soc.angle.plot <-ggplot(ge.dat,aes(x=Condition, y=Angle, fill=Condition)) +
   geom_errorbar(aes(ymin=Angle-SE,ymax=Angle+SE),width=.2,position=position_dodge(.9), size=1)+
   #labs(title = "Angle towards social images")+
   xlab("")+
-  ylab("Average deviation to social images (Angle)")+
+  ylab("Average deviation to social images (°)")+
   guides(fill=FALSE) +
   theme_bw() +
   theme(plot.background = element_blank(),        
