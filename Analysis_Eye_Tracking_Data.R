@@ -70,9 +70,9 @@ cousineau.SE<-function(data_frame_inputted){
   
 
 
-setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
+#setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
 
-#setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
+setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
 
 
 #GE analysis
@@ -587,7 +587,7 @@ steiger.result
 
 #image_outlier close(big.pb)
 
-write.csv(eq.correlations,"eq_fv_correlations.csv")
+#write.csv(eq.correlations,"eq_fv_correlations.csv")
 
 #### FIGURES ####
 
@@ -704,33 +704,6 @@ ggsave(scatEQ_FV, filename = "EQ_v_FV.png", width=10, height=8)
 
 ############################ POST REVIEWER ANALYSIS ##################################
 
-## Range of angles & SD scatter plot (person by person)
-
-
-EQ_GEPlot <- rep(summary.ge.eq$EQ.Total,2)
-EQ_GE <- c(summary.ge.eq$angle.unsc, summary.ge.eq$angle.scr)
-GE_Condition <- c(rep("Unscrambled",length(summary.ge.eq$pps)), rep("Scrambled",length(summary.ge.eq$pps)))
-datEQ_GE <- data.frame(EQ_GEPlot,EQ_GE,GE_Condition)
-datEQ_GE <- na.omit(datEQ_GE)
-
-# Order scrambled and unscrambled in order of "Unscrambled" then "scrambled"
-# adding column for desired order
-datEQ_GE$order=c(rep(1,length(summary.ge.eq$pps)),rep(2,length(summary.ge.eq$pps)))
-datEQ_GE=transform(datEQ_GE, GE_Condition=reorder(GE_Condition, order(order, order, decreasing = FALSE)))
-
-scatEQ_GE <- ggplot(datEQ_GE, aes(x=EQ_GEPlot,y=EQ_GE,cond=GE_Condition,color=GE_Condition))+
-  geom_point(aes(shape=GE_Condition),size = 4,cond=GE_Condition) + 
-  stat_smooth(method="lm", se=TRUE, fill="gray")+xlab("EQ") + ylab("Angle of first saccade (positive is towards social)") + 
-  scale_color_manual(values=cbbPalette)+
-  theme(plot.background = element_blank()
-        ,text = element_text(size=20, face="bold"))
-
-
-scatEQ_GE
-
-ggsave(scatEQ_GE, filename = "EQ_v_GE.png", width=10, height=8)
-
-
 ## proportion of first fixations to social vs. nonsocial in Freeview task
 
 summary.fv$first.unsc.prop=summary.fv$first.unsc.soc/(summary.fv$first.unsc.soc+summary.fv$first.unsc.nonsoc)
@@ -773,8 +746,8 @@ datEQ_FF <- na.omit(datEQ_FF)
 datEQ_FF$order=c(rep(1,length(summary.fv.eq$pps)),rep(2,length(summary.fv.eq$pps)))
 datEQ_FF=transform(datEQ_FF, FF_Condition=reorder(FF_Condition, order(order, order, decreasing = FALSE)))
 
-scatEQ_FF <- ggplot(datEQ_FF, aes(x=EQ_FFPlot,y=EQ_FF,cond=FF_Condition,color=FF_Condition))+
-  geom_point(aes(shape=FF_Condition),size = 4,cond=FF_Condition) + 
+scatEQ_FF <- ggplot(datEQ_FF, aes(x=EQ_FFPlot,y=EQ_FF,color=FF_Condition))+
+  geom_point(aes(shape=FF_Condition),size = 4) + 
   stat_smooth(method="lm", se=TRUE, fill="gray")+xlab("EQ") + ylab("proportion of first saccades to social images") + 
   scale_color_manual(values=cbbPalette)+
   theme(plot.background = element_blank()
@@ -804,27 +777,3 @@ male.summary.fv.eq=subset(summary.fv.eq,summary.fv.eq$Gender=="m")
 female.summary.fv.eq=subset(summary.fv.eq,summary.fv.eq$Gender=="f")
 cor.test(male.summary.fv.eq$EQ.Total,male.summary.fv.eq$unsc.prop)
 cor.test(female.summary.fv.eq$EQ.Total,female.summary.fv.eq$unsc.prop)
-
-
-### deletable - I think ####
-
-
-### cronbach alpha calcs...?
-
-# GE
-
-ge.alpha.pps = unique(ge.raw.trials$PP)
-ge.alpha.pairs = unique(ge.raw.trials$trial.code)
-ge.alpha.matrix = matrix(nrow = length(ge.alpha.pps), ncol=length(ge.alpha.pairs))
-
-for(i in 1:length(ge.alpha.pps)){
-  for(j in 1:length(ge.alpha.pairs)){
-    ge.alpha.matrix = ge.raw.trials$dev.angle
-    [ge.raw.trials]
-  }
-}
-
-
-
-
-
