@@ -585,9 +585,13 @@ steiger.result
 
 #image_outlier }
 
-#image_outlier close(big.pb)
+<<<<<<< HEAD
+close(big.pb) 
 
 write.csv(eq.correlations,"eq_fv_correlations.csv")
+=======
+#image_outlier close(big.pb)
+>>>>>>> de12177c48c5901d58528add34d3ae0d91a83d0a
 
 #### FIGURES ####
 
