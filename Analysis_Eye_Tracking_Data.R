@@ -565,7 +565,9 @@ eq.correlations$steiger.p[all_of_it]=steiger.result$P_Value
 
 }
 
-close(big.pb)
+close(big.pb) 
+
+write.csv(eq.correlations,"eq_fv_correlations.csv")
 
 #### FIGURES ####
 
