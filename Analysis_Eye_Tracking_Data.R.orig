@@ -107,11 +107,11 @@ if(outlier.remove == "all"){
       visual_ratios[[image.variables[i]]][visual_ratios$Soc_Pic == these.outliers[j]]<-NA #unscrambled
       visual_ratios[[image.variables[i]]][visual_ratios$Soc_Pic_scrambled == these.outliers[j]]<-NA #scrambled
       
-#setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
+    }
   }
 }
 
-setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
+
 data <- data.frame(ratio = (c(na.omit(visual_ratios$Valence),
                               na.omit(visual_ratios$Arousal),
                               na.omit(visual_ratios$RMS),
@@ -127,6 +127,7 @@ data$newMeasure = str_wrap(data$measure, width=10)
 
 ####### outlier removal ######
 
+<<<<<<< HEAD
 
 bp <- ggplot(data, aes(x=newMeasure,y=ratio))+
   geom_boxplot()+
@@ -144,6 +145,11 @@ t.test(na.omit(visual_ratios$Valence),mu = 1)
 t.test(na.omit(visual_ratios$RMS),mu = 1)
 t.test(na.omit(visual_ratios$LocalRMS),mu = 1)
 t.test(na.omit(visual_ratios$Salience), mu = 1) # this one comes out p < 0.04, because of outliers
+=======
+#setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
+
+setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
+>>>>>>> 59d53e049b5e74811dd00ffc5727b979a35037d8
 
 
 #GE analysis
