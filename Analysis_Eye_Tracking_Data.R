@@ -1,3 +1,22 @@
+######################   Settings   #######################
+
+setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017") # you need to change this to whichever directory you're storing your file
+#setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
+
+
+outlier.sds = 2 #identify pairs of images which are greater than 1 standard deviation from the mean
+
+# options for outlier image pair removal
+## "all" - remove all trials which include image pairs that have been identified as having outliers 
+## "off" - do not remove any image pairs as outliers
+## "Arousal","Valence","RMS","LocalRMS","Salience" - select either one or multiple to remove images that are outliers in these metrics, e.g. "Arousal,Valence"
+
+outlier.remove = "Salience"
+
+############################################################
+
+library(stringr)
+library(boot)
 library(ggplot2)
 library(grid)
 # data wrangling made easier
@@ -45,43 +64,134 @@ cousineau.SE<-function(data_frame_inputted){
   return(results)
 }
 
+visual_ratios <- read.csv("Visual_Ratios.csv")
 
+# detect which images are outliers
+outlier.frame<-data.frame(Arousal=c(""),Valence=c(""),RMS=c(""),LocalRMS=c(""),Salience=c(""))
+image.variables = c("Arousal","Valence","RMS","LocalRMS","Salience")
 
-
-############### Code for checking whether any one image drove the effect. ######################################
-### Commented out below. To reinstate, uncomment lines with "image_outlier" at the start of a line
-#image_outlier image.list=read.csv("image_list.csv")
-
-#image_outlier eq.correlations=data.frame(unsc.r.val=rep(0,length(image.list)),
-#image_outlier                           unsc.p.val=rep(0,length(image.list)),
-#image_outlier                           scr.r.val=rep(0,length(image.list)),
-#image_outlier                           scr.p.val=rep(0,length(image.list)),
-#image_outlier                           steiger.p=rep(0,length(image.list)))
-### code to remove any image
-
-#image_outlier big.pb <- winProgressBar(title = "big progress bar", min = 0,
-#image_outlier                     max = length(image.list), width = 300)
-
-
-#image_outlier for(all_of_it in 1:length(image.list)){
-
-#image_outlier  setWinProgressBar(big.pb, all_of_it, title=paste( round(all_of_it/length(image.list)*100, 0),"% done"))
-################################################################################################################
+for(i in 1:length(image.variables)){
+  this.variable <- image.variables[i]
+  this.vector<-visual_ratios[[this.variable]]
+  this.mean<-mean(this.vector)
+  this.sd<-sd(this.vector)
+  upper.limit<-this.mean+outlier.sds*this.sd
+  lower.limit<-this.mean-outlier.sds*this.sd
   
+  #index outlier files
+  this.outliers.unscrambled.ge.images<-as.vector(visual_ratios$Soc_Pic[this.vector>upper.limit | this.vector<lower.limit])
+  this.outliers.scrambled.ge.images<-as.vector(visual_ratios$Soc_Pic_scrambled[this.vector>upper.limit | this.vector<lower.limit])
+  
+  this.outliers.unscrambled.fv.images<-as.vector(visual_ratios$FV_unscrambled[this.vector>upper.limit | this.vector<lower.limit])
+  this.outliers.scrambled.fv.images<-as.vector(visual_ratios$FV_Scrambled[this.vector>upper.limit | this.vector<lower.limit])
+  
+  all.outlier.images = c(this.outliers.unscrambled.ge.images,
+                         this.outliers.scrambled.ge.images,
+                         this.outliers.unscrambled.fv.images,
+                         this.outliers.scrambled.fv.images)
+  all.outlier.images = unique(all.outlier.images)
+  
+  
+  outlier.frame[[this.variable]]<-paste(all.outlier.images, collapse=",") # storing list as a string
+}
+
+####### image outlier detection done ######
 
 
-setwd("C:/Users/Anthony/Dropbox/Anthony/wamp/www/EyeTracking_PlosOne_2017")
+####### outlier removal #####
+if(outlier.remove == "all"){
+  for (i in 1:length(image.variables)){
+    these.outliers = outlier.frame[[image.variables[i]]]
+    these.outliers = str_split(these.outliers, ",")[[1]] #to make into a vector
+    for(j in 1:length(these.outliers)){
+      visual_ratios[[image.variables[i]]][visual_ratios$Soc_Pic == these.outliers[j]]<-NA #unscrambled
+      visual_ratios[[image.variables[i]]][visual_ratios$Soc_Pic_scrambled == these.outliers[j]]<-NA #scrambled
+      
+    }
+  }
+}
 
-#setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
+
+data <- data.frame(ratio = (c(na.omit(visual_ratios$Valence),
+                              na.omit(visual_ratios$Arousal),
+                              na.omit(visual_ratios$RMS),
+                              na.omit(visual_ratios$LocalRMS),
+                              na.omit(visual_ratios$Salience))), 
+                   measure = (c(rep("Rating - Valence",length(na.omit(visual_ratios$Valence))),
+                                rep("Rating - Arousal",length(na.omit(visual_ratios$Arousal))),
+                                rep("RMS - global",length(na.omit(visual_ratios$RMS))),
+                                rep("RMS - local",length(na.omit(visual_ratios$LocalRMS))),
+                                rep("Salience - Koch",length(na.omit(visual_ratios$Salience))))))
+data$newMeasure = str_wrap(data$measure, width=10)
+
+
+####### outlier removal ######
+
+
+bp <- ggplot(data, aes(x=newMeasure,y=ratio))+
+  geom_boxplot()+
+  theme(text = element_text(size=30))+
+  ylab("Social / Non-social ratio")+
+  xlab("")
+bp
+
+ggsave(bp, filename = "Figure_1.png", width=10, height=10)
+
+# one-sample t-tests with null mu = 1, a social/non-social ratio of 1 is balanced
+# all tests are "two.sided" by default
+t.test(na.omit(visual_ratios$Arousal),mu = 1)
+t.test(na.omit(visual_ratios$Valence),mu = 1)
+t.test(na.omit(visual_ratios$RMS),mu = 1)
+t.test(na.omit(visual_ratios$LocalRMS),mu = 1)
+t.test(na.omit(visual_ratios$Salience), mu = 1) # this one comes out p < 0.04, because of outliers
 
 
 #GE analysis
 ge.raw<-read.csv("GE_data.csv")
 fv.data.raw<-read.csv("FV_data_raw.csv")
 
-#############################################image_outlier
-### this is only for creating the table of how the data looks when removing each image pairing
-### remove image.list[all_of_it]
+########## image_outlier removal ##########
+
+
+### need to do for scrambled and unscrambled trials!!!
+
+### need to rename files as they are named in raw fv and ge files!!
+
+
+if(outlier.remove == "all"){
+  for(i in 1:length(image.variables)){
+    these.outliers = outlier.frame[[image.variables[i]]]
+    these.outliers = str_split(these.outliers, ",")[[1]] #to make into a vector
+    for(j in 1:length(these.outliers)){
+      ge.raw$image1[ge.raw$image1==these.outliers[j]]<-NA
+      ge.raw$image2[ge.raw$image2==these.outliers[j]]<-NA ## unnecessary as image 2s are nonsocial (and pairs are removed by 
+                                                          #selecting their social partners)
+      fv.data.raw$image1[fv.data.raw$image1==these.outliers[j]] <-NA
+      fv.data.raw$image2[fv.data.raw$image2==these.outliers[j]] <-NA ## unnecessary as image 2s are nonsocial (and pairs are removed by 
+                                                                     #selecting their social partners)
+    }
+  }
+} else {
+  if(outlier.remove == "Salience"){
+    these.outliers = outlier.frame$Salience
+    these.outliers = str_split(these.outliers, ",")[[1]] #to make into a vector
+    for(j in 1:length(these.outliers)){
+      ge.raw$image1[ge.raw$image1==these.outliers[j]]<-NA
+      ge.raw$image2[ge.raw$image2==these.outliers[j]]<-NA ## unnecessary as image 2s are nonsocial (and pairs are removed by 
+      #selecting their social partners)
+      fv.data.raw$image1[fv.data.raw$image1==these.outliers[j]] <-NA
+      fv.data.raw$image2[fv.data.raw$image2==these.outliers[j]] <-NA ## unnecessary as image 2s are nonsocial (and pairs are removed by 
+      #selecting their social partners)
+    }
+  }
+}
+
+
+
+ge.raw<-na.omit(ge.raw) # initial no. obs = 13424
+fv.data.raw<-na.omit(fv.data.raw) # initial no. obs = 71279
+
+
 #image_outlier fv.data.raw$image1[fv.data.raw$image1==image.list[all_of_it]]<-NA
 #image_outlier fv.data.raw<-na.omit(fv.data.raw)
 ############################################
@@ -689,7 +799,7 @@ scatEQ_FV <- ggplot(datEQ_FV, aes(x=EQ,y=EQ_FV,cond=Condition,color=Condition))+
   stat_smooth(method="lm", se=TRUE, fill="gray")+xlab("EQ") + ylab("Proportion Looking Time (Social)") + 
   scale_color_manual(values=cbbPalette)+
   theme(plot.background = element_blank()
-        ,text = element_text(size=20, face="bold"))
+        ,text = element_text(size=30, face="bold"))
 
 
 scatEQ_FV
@@ -776,7 +886,7 @@ scatEQ_FF <- ggplot(datEQ_FF, aes(x=EQ_FFPlot,y=EQ_FF,cond=FF_Condition,color=FF
   stat_smooth(method="lm", se=TRUE, fill="gray")+xlab("EQ") + ylab("proportion of first saccades to social images") + 
   scale_color_manual(values=cbbPalette)+
   theme(plot.background = element_blank()
-        ,text = element_text(size=20, face="bold"))
+        ,text = element_text(size=30, face="bold"))
 
 
 scatEQ_FF
