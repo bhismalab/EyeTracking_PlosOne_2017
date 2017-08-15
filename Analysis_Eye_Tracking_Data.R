@@ -1,5 +1,7 @@
 #### Settings and files ####
 
+#rm(list = ls()) #if you want to clear all before starting
+
 # set your working director ### DELETE the "!!!" when you've set it
 !!!!! setwd("R:/BhismaLab/anthony/Studies & Data sets/2010-2011/Freeviewing/Github/EyeTracking_PlosOne_2017")
 
@@ -19,7 +21,7 @@ min.trials = 30
 # options for outlier image pair removal
 ## "Arousal","Valence","RMS","LocalRMS","Salience" - select either one or multiple to remove images that are outliers in these metrics, e.g. "Arousal,Valence"
 ## "Off" to not select any of them
-outlier.remove = c("Salience") 
+outlier.remove = c("Off") 
 
 #### Libraries and functions ####
 library(stringr)
@@ -115,7 +117,6 @@ bp <- ggplot(image.properties, aes(x=newMeasure,y=ratio))+
 bp
 
 ggsave(bp, filename = "Figure_1.png", width=10, height=10)
-
 
 # t-tests BEFORE outlier removal
 # one-sample t-tests with null mu = 1, a social/non-social ratio of 1 is balanced
@@ -323,13 +324,7 @@ summary.ge$pps[summary.ge$scr.trials<min.trials]<-NA
 summary.ge<-na.omit(summary.ge)
 sum(summary.ge$time.exclusion.500.higher+summary.ge$time.exclusion.70.lower) #number of trials removed as outside the 70-500ms window
 
-#total trials for each condition (scrambled/unscrambled)
-length(summary.ge$pps)*80                             #total number of trials
-ge.total.time.exclusions/(length(summary.ge$pps)*80)  #total number of exclusions
-ge.total.time.exclusions/(length(summary.ge$pps))     #average number of trials per participant
-
 #GE summary is now ready
-
 #### Preprocessing of raw FV data ####
 
 #identify if scrambled or not
@@ -534,7 +529,6 @@ write.csv(summary.fv.eq, file="FreeviewSummary_EQ.csv")
 
 
 #### Statistical Analysis ####
-
 #GE task
 ##Main effects
 mean(summary.ge$angle.unsc)
