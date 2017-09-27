@@ -1,3 +1,10 @@
+### Analysis of Chakrabarti et al 2017 data ###
+
+### This analysis is generally linear to how it is written up in the paper. 
+# The only exception to this is the supplementary analysis at the end of valence ratings of the social and nonsocial stimuli 
+# from a paper that is under preparation (Haffey et al), which is at the bottom of this script
+
+
 #### Settings and files ####
 
 #rm(list = ls()) #if you want to clear all before starting
@@ -691,3 +698,30 @@ scatEQ_FV <- ggplot(datEQ_FV, aes(x=EQ,y=EQ_FV,cond=Condition,color=Condition))+
         ,text = element_text(size=30, face="bold"))
 scatEQ_FV
 ggsave(scatEQ_FV, filename = "EQ_v_FV.png", width=10, height=8)
+
+
+
+### supplementary analysis of rating data from Haffey et al (under preparation)
+
+
+rating.data<-read.csv("Raw_Rating_data_Haffey_et_al_in_preparation.csv")
+rating.data.summary = data.frame(PP=unique(rating.data$PP))
+for(i in 1:length(rating.data.summary$PP)){
+  rating.data.summary$social[i]=mean(na.omit(rating.data$ValenceUserChoice[rating.data$Soc_NonSoc=="Social" &
+                                                                     rating.data$PP == rating.data.summary$PP[i]])) 
+  
+  
+  rating.data.summary$nonsocial[i]=mean(na.omit(rating.data$ValenceUserChoice[(rating.data$Soc_NonSoc=="NonSocial" | 
+                                                                                rating.data$Soc_NonSoc=="Nonsocial")  &
+                                                                     rating.data$PP == rating.data.summary$PP[i]]))
+}
+
+mean(rating.data.summary$social)
+mean(rating.data.summary$nonsocial)
+t.test(rating.data.summary$social,rating.data.summary$nonsocial,paired=T)
+
+#confirming that the stimuli are rewarding (greater than 5 rating)
+t.test(rating.data.summary$social, mu=5)
+t.test(rating.data.summary$nonsocial, mu=5)
+
+
